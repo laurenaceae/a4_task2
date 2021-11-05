@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(tidyverse)
 library(lubridate)
+library(dplyr)
 ```
 
 # Introduction
@@ -37,9 +38,25 @@ juvenile_hares <- hares %>%
 # plot the juvenile hares trapped per year
 ggplot(data = juvenile_hares, aes(x = year)) +
   geom_bar() +
-  labs(x = "Year", y = "Juvenile Hares Trapped", title = )
+  labs(x = "Year", y = "Juvenile Hares Trapped") +
+  theme_minimal()
 ```
 
+**Figure 1.** Annual juvenile hare trap counts. Data comes from the Bonanza Creek Experimental Forest LTER site. Years range from `r min(juvenile_hares$year)` to `r max(juvenile_hares$year)`. 
+
+```{r}
+juvenile_hares_summary <- juvenile_hares %>% 
+  group_by(year) %>% 
+  summarize(count = n())
+
+juvenile_hares_stats <- juvenile_hares_summary %>% 
+  summarize(
+    mean = mean(count), 
+    median = median(count), 
+    )
+```
+
+The minimum count of juvenile hares trapped for a given year was 0 during both 2002 and 2009, and the maximum was `r max(juvenile_hares_summary$count)` trapped which was during `r juvenile_hares_summary[juvenile_hares_summary$count == max(juvenile_hares_summary$count), ]$year`. The median number of juvenile hares trapped annually was `r juvenile_hares_stats$median` hares and the mean was `r juvenile_hares_stats$mean` hares. One notable trend in the data is that the number of juvenile hares trapped annually generally decreases per year. I would suggest that the amount of traps set be included in this dataset, then the number of juveniles trapped could be divided by the number of traps set. Then, the absolute counts would become success rates, which are more standardized, informative, and reflective of true hare populations. 
 
 ## Juvenile Hare Weights
 
