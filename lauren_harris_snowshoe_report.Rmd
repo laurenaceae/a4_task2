@@ -1,5 +1,5 @@
 ---
-title: "lauren_harris_snowshow_report"
+title: "lauren_harris_snowshoe_report"
 author: "Lauren Harris"
 date: "11/4/2021"
 output: html_document
