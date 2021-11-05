@@ -1,0 +1,33 @@
+---
+title: "lauren_harris_snowshow_report"
+author: "Lauren Harris"
+date: "11/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last so you know what’s contained in the report
+
+# Data and Analyses
+
+A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.
+
+# Juvenile Hare Initial Investigation
+
+## Annual Juvenile Hare Trap Counts
+
+## Juvenile Hare Weights
+
+## Juvenile Weight Comparison By Sex
+
+## Relationship Between Juvenile Weight & Hind Foot Length
+
+# Summary
+
+
+# Citations
