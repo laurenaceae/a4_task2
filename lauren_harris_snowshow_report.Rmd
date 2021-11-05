@@ -7,6 +7,10 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(lubridate)
 ```
 
 # Introduction
@@ -20,6 +24,22 @@ A 3 - 4 sentence section in which you briefly describe the data, including citat
 # Juvenile Hare Initial Investigation
 
 ## Annual Juvenile Hare Trap Counts
+```{r}
+# Read in data
+hares <- read_csv(here("data", "bonanza_hares.csv"))
+
+# reduce data set to juvenile hares only
+juvenile_hares <- hares %>% 
+  filter(age == "j") %>% 
+  mutate(date = mdy(date)) %>% 
+  mutate(year = year(date))
+
+# plot the juvenile hares trapped per year
+ggplot(data = juvenile_hares, aes(x = year)) +
+  geom_bar() +
+  labs(x = "Year", y = "Juvenile Hares Trapped", title = )
+```
+
 
 ## Juvenile Hare Weights
 
