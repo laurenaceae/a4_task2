@@ -35,7 +35,7 @@ A 3 - 4 sentence section in which you briefly describe the data, including citat
 # read in data
 hares <- read_csv(here("data", "bonanza_hares.csv"))
 
-# reduce data set to juvenile hares only
+# reduce data set to juvenile hares only and translate dates into years
 juvenile_hares <- hares %>% 
   filter(age == "j") %>% 
   mutate(date = mdy(date)) %>% 
@@ -44,7 +44,10 @@ juvenile_hares <- hares %>%
 ggplot(data = juvenile_hares, aes(x = year)) +
   geom_bar() +
   labs(x = "Year", y = "Juvenile Hares Trapped") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_x_continuous(breaks = seq(from = 1999, to = 2012, by = 1))
+  
 ```
 
 **Figure 1.** Annual juvenile hare trap counts. Annual counts of trapped juvenile hares from the Bonanza Creek Experimental Forest LTER site. (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Data: Kielland et al. 2017. 
@@ -59,9 +62,10 @@ juvenile_hares_summary <- juvenile_hares %>%
 juvenile_hares_stats <- juvenile_hares_summary %>% 
   summarize(
     mean = mean(count), 
-    median = median(count), 
-    )
+    median = median(count))
 ```
+
+### Summary
 
 The minimum count of juvenile hares trapped for a given year was 0 (2002 and 2009), and the maximum was `r max(juvenile_hares_summary$count)` hares trapped, during `r juvenile_hares_summary[juvenile_hares_summary$count == max(juvenile_hares_summary$count), ]$year`. The median number of juvenile hares trapped annually was `r juvenile_hares_stats$median` hares and the mean was `r juvenile_hares_stats$mean` hares. One notable trend in the data is that the number of juvenile hares trapped annually generally decreased per year. I would suggest that the amount of traps set be included in this dataset. Then, the number of juveniles trapped should be divided by the number of traps set. Therefore, the absolute counts would become success rates, which are more standardized, informative, and reflective of true hare populations. 
 
@@ -108,6 +112,10 @@ juv_hares_sex_site_stats %>%
   row_spec(4:6, background = "lightgray")
 
 ```
+
+### Summary
+
+Then, in 2 - 3 sentences below your visualization(s) describe in text the main takeaways that you would want the audience to understand from your figures.
 
 ## Juvenile Weight Comparison By Sex
 
@@ -202,6 +210,11 @@ ggplot(data = juv_weight_foot, aes(x = hindft, y = weight)) +
 
 **Figure 3.** Relationship of hind foot length (mm) and body weight (g) of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Data: Kielland et al. 2017. 
 
+```{r}
+# trying out a linear model because boss said so
+juv_hares_lm <- lm(weight ~ hindft, data = juv_weight_foot)
+summary(juv_hares_lm)
+```
 
 # Summary
 
