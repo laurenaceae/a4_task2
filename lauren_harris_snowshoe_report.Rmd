@@ -12,6 +12,7 @@ library(here)
 library(tidyverse)
 library(lubridate)
 library(dplyr)
+library(kableExtra)
 ```
 
 # Introduction
@@ -59,6 +60,45 @@ juvenile_hares_stats <- juvenile_hares_summary %>%
 The minimum count of juvenile hares trapped for a given year was 0 during both 2002 and 2009, and the maximum was `r max(juvenile_hares_summary$count)` trapped which was during `r juvenile_hares_summary[juvenile_hares_summary$count == max(juvenile_hares_summary$count), ]$year`. The median number of juvenile hares trapped annually was `r juvenile_hares_stats$median` hares and the mean was `r juvenile_hares_stats$mean` hares. One notable trend in the data is that the number of juvenile hares trapped annually generally decreases per year. I would suggest that the amount of traps set be included in this dataset, then the number of juveniles trapped could be divided by the number of traps set. Then, the absolute counts would become success rates, which are more standardized, informative, and reflective of true hare populations. 
 
 ## Juvenile Hare Weights
+
+```{r}
+juv_hares_sex_site <- juvenile_hares %>% 
+  group_by(sex, grid) %>% 
+  summarize(count = n(), weight) %>% 
+  mutate(sex = case_when(
+    sex %in% "f" ~ "Female", 
+    sex %in% "m" ~ "Male", 
+    sex %in% NA ~ "Sex Unknown")) %>% 
+  mutate(grid = case_when(
+    grid %in% "bonbs" ~ "Bonbs",
+    grid %in% "bonmat" ~ "Bonmat",
+    grid %in% "bonrip" ~ "Bonrip"
+  ))
+
+ggplot(data = juv_hares_sex_site, aes(x = weight, y = count)) +
+  geom_col(width = 20) +
+  facet_grid(sex~grid) +
+  labs(x = "Weight (g)", y = "Juvenile Hares Trapped" )
+```
+**Figure 2.** fig caption here
+
+**Table 1.** caption here
+
+```{r}
+juv_hares_sex_site_stats <- juv_hares_sex_site %>% 
+  group_by(sex, grid) %>% 
+	summarise(mean = mean(weight, na.rm = TRUE),
+	          sd = sd(weight, na.rm = TRUE),
+	          n = n()) 
+
+#A finalized table containing the mean, standard deviation, and sample size for male and female juvenile snowshoe hares, with a table caption
+
+juv_hares_sex_site_stats %>% 
+  kable(col.names = c("Sex", "Site", "Mean (g)", "Standard Deviation (g)", "Sample Size")) %>% 
+  kable_styling(full_width = FALSE)
+
+```
+
 
 ## Juvenile Weight Comparison By Sex
 
