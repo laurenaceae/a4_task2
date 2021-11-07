@@ -2,7 +2,11 @@
 title: "lauren_harris_snowshoe_report"
 author: "Lauren Harris"
 date: "11/4/2021"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
+    number_sections: yes
+    theme: lumen
 ---
 
 ```{r setup, include=FALSE}
@@ -36,20 +40,21 @@ juvenile_hares <- hares %>%
   mutate(date = mdy(date)) %>% 
   mutate(year = year(date))
 
-# plot the juvenile hares trapped per year
 ggplot(data = juvenile_hares, aes(x = year)) +
   geom_bar() +
   labs(x = "Year", y = "Juvenile Hares Trapped") +
   theme_minimal()
 ```
 
-**Figure 1.** Annual juvenile hare trap counts. Data comes from the Bonanza Creek Experimental Forest LTER site. Years range from `r min(juvenile_hares$year)` to `r max(juvenile_hares$year)`. 
+**Figure 1.** Annual juvenile hare trap counts. Annual counts of trapped juvenile hares from the Bonanza Creek Experimental Forest LTER site. (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Data: Kielland et al. 2017. 
 
 ```{r}
+# find counts of juvenile hares by year
 juvenile_hares_summary <- juvenile_hares %>% 
   group_by(year) %>% 
   summarize(count = n())
 
+# find mean and median counts of juvenile hares trapped 
 juvenile_hares_stats <- juvenile_hares_summary %>% 
   summarize(
     mean = mean(count), 
@@ -57,11 +62,12 @@ juvenile_hares_stats <- juvenile_hares_summary %>%
     )
 ```
 
-The minimum count of juvenile hares trapped for a given year was 0 during both 2002 and 2009, and the maximum was `r max(juvenile_hares_summary$count)` trapped which was during `r juvenile_hares_summary[juvenile_hares_summary$count == max(juvenile_hares_summary$count), ]$year`. The median number of juvenile hares trapped annually was `r juvenile_hares_stats$median` hares and the mean was `r juvenile_hares_stats$mean` hares. One notable trend in the data is that the number of juvenile hares trapped annually generally decreases per year. I would suggest that the amount of traps set be included in this dataset, then the number of juveniles trapped could be divided by the number of traps set. Then, the absolute counts would become success rates, which are more standardized, informative, and reflective of true hare populations. 
+The minimum count of juvenile hares trapped for a given year was 0 (2002 and 2009), and the maximum was `r max(juvenile_hares_summary$count)` hares trapped, during `r juvenile_hares_summary[juvenile_hares_summary$count == max(juvenile_hares_summary$count), ]$year`. The median number of juvenile hares trapped annually was `r juvenile_hares_stats$median` hares and the mean was `r juvenile_hares_stats$mean` hares. One notable trend in the data is that the number of juvenile hares trapped annually generally decreased per year. I would suggest that the amount of traps set be included in this dataset. Then, the number of juveniles trapped should be divided by the number of traps set. Therefore, the absolute counts would become success rates, which are more standardized, informative, and reflective of true hare populations. 
 
 ## Juvenile Hare Weights
 
 ```{r}
+# group juvenile hares by sex and site, then get sample sizes and weights, then make sex and grid variables presentable
 juv_hares_sex_site <- juvenile_hares %>% 
   group_by(sex, grid) %>% 
   summarize(count = n(), weight) %>% 
@@ -80,27 +86,53 @@ ggplot(data = juv_hares_sex_site, aes(x = weight, y = count)) +
   facet_grid(sex~grid) +
   labs(x = "Weight (g)", y = "Juvenile Hares Trapped" )
 ```
-**Figure 2.** fig caption here
 
-**Table 1.** caption here
+**Figure 2.** Distribution of weights for juvenile hares (g) from Bonanza Creek Experimental Forest LTER site (1999-2012). Hares are grouped by sex and site. Data: Kielland et al. 2017. 
+
+**Table 1.** Summary statistics of weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (1999-2012). Hares are grouped by sex and site. Statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017.  
 
 ```{r}
+# find mean, standard deviation and sample size for weights of juvenile hares
 juv_hares_sex_site_stats <- juv_hares_sex_site %>% 
   group_by(sex, grid) %>% 
 	summarise(mean = mean(weight, na.rm = TRUE),
 	          sd = sd(weight, na.rm = TRUE),
 	          n = n()) 
 
-#A finalized table containing the mean, standard deviation, and sample size for male and female juvenile snowshoe hares, with a table caption
-
+# make table of mean, standard deviation and sample size for juvenile hare weights
 juv_hares_sex_site_stats %>% 
   kable(col.names = c("Sex", "Site", "Mean (g)", "Standard Deviation (g)", "Sample Size")) %>% 
+  kable_styling(full_width = FALSE) %>% 
+  column_spec(1:5, color = "black") %>% 
+  row_spec(4:6, background = "lightgray")
+
+```
+
+## Juvenile Weight Comparison By Sex
+
+**Table 2.** Weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (1999-2012) grouped by sex. Summary statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017. 
+
+```{r}
+# group juvenile hares by sex then find mean, standard deviaiton and sample size for weights
+juv_sex_stats <- juvenile_hares %>% 
+  group_by(sex) %>% 
+	summarise(mean = mean(weight, na.rm = TRUE),
+	          sd = sd(weight, na.rm = TRUE),
+	          n = n()) 
+
+# make sex values presentable then make a table
+juv_sex_stats %>% 
+  mutate(sex = case_when(
+    sex %in% "f" ~ "Female", 
+    sex %in% "m" ~ "Male", 
+    sex %in% NA ~ "Sex Unknown")) %>%
+  kable(col.names = c("Sex", "Mean (g)", "Standard Deviation (g)", "Sample Size")) %>% 
   kable_styling(full_width = FALSE)
 
 ```
 
 
-## Juvenile Weight Comparison By Sex
+
 
 ## Relationship Between Juvenile Weight & Hind Foot Length
 
