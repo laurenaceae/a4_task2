@@ -1,5 +1,5 @@
 ---
-title: "lauren_harris_snowshoe_report"
+title: "Snowshoe report"
 author: "Lauren Harris"
 date: "11/4/2021"
 output: 
@@ -17,6 +17,7 @@ library(tidyverse)
 library(lubridate)
 library(dplyr)
 library(kableExtra)
+library(effsize)
 ```
 
 # Introduction
@@ -31,7 +32,7 @@ A 3 - 4 sentence section in which you briefly describe the data, including citat
 
 ## Annual Juvenile Hare Trap Counts
 ```{r}
-# Read in data
+# read in data
 hares <- read_csv(here("data", "bonanza_hares.csv"))
 
 # reduce data set to juvenile hares only
@@ -87,9 +88,9 @@ ggplot(data = juv_hares_sex_site, aes(x = weight, y = count)) +
   labs(x = "Weight (g)", y = "Juvenile Hares Trapped" )
 ```
 
-**Figure 2.** Distribution of weights for juvenile hares (g) from Bonanza Creek Experimental Forest LTER site (1999-2012). Hares are grouped by sex and site. Data: Kielland et al. 2017. 
+**Figure 2.** Distribution of weights for juvenile hares (g) from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Data: Kielland et al. 2017. 
 
-**Table 1.** Summary statistics of weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (1999-2012). Hares are grouped by sex and site. Statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017.  
+**Table 1.** Summary statistics of weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017.  
 
 ```{r}
 # find mean, standard deviation and sample size for weights of juvenile hares
@@ -110,7 +111,7 @@ juv_hares_sex_site_stats %>%
 
 ## Juvenile Weight Comparison By Sex
 
-**Table 2.** Weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (1999-2012) grouped by sex. Summary statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017. 
+**Table 2.** Weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`) grouped by sex. Summary statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017. 
 
 ```{r}
 # group juvenile hares by sex then find mean, standard deviaiton and sample size for weights
@@ -131,10 +132,76 @@ juv_sex_stats %>%
 
 ```
 
+```{r, include = FALSE}
+# subset data for juvenile hares by sex
+juv_hares_f <- juvenile_hares %>% 
+  filter(sex == "f") %>% 
+  select(weight)
 
+juv_hares_m <- juvenile_hares %>% 
+  filter(sex == "m") %>% 
+  select(weight)
 
+# find mean weights for males and females
+f_juv_mean <- mean(juv_hares_f$weight, na.rm = TRUE)
+m_juv_mean <- mean(juv_hares_m$weight, na.rm = TRUE)
+
+# exploratory tests before running t-test
+
+# histograms
+ggplot(data = juv_hares_f, aes(x = weight))+
+  geom_bar()
+
+ggplot(data = juv_hares_m, aes(x = weight))+
+  geom_bar()
+
+# qq plots
+ggplot(data = juv_hares_f, aes(sample = weight))+
+  geom_qq()
+
+ggplot(data = juv_hares_m, aes(sample = weight))+
+  geom_qq()
+
+# create dataframe with males and females together
+juv_hares_f_m <- juvenile_hares %>%
+  filter(sex == "m" | sex == "f") %>% 
+  select(sex, weight)
+
+# subset data with males and females but use pull() so I can run tests on it
+juv_hares_f_pull <- juvenile_hares %>% 
+  filter(sex == "f") %>% 
+  pull(weight) %>% 
+  na.omit()
+
+juv_hares_m_pull <- juvenile_hares %>% 
+  filter(sex == "m") %>% 
+  pull(weight) %>% 
+  na.omit()
+
+# effect size with cohen's d
+juv_hares_cohen <- cohen.d(juv_hares_m_pull, juv_hares_f_pull)
+
+# t test, two samples but unpaired
+juv_hares_ttest <- t.test(juv_hares_m, juv_hares_f)
+```
+
+The mean weight of female hares is `r round(f_juv_mean, 2)` g, which is `r round((1-(f_juv_mean/m_juv_mean))*100, 2)`% smaller than the mean weight of male hares at `r round(m_juv_mean, 2)` g. The actual difference in mean weights is `r m_juv_mean - f_juv_mean` g. The effect size is `r round(juv_hares_cohen$estimate, 3)`, which is not very large - the means are pretty close together. A t-test was performed which purported a `r round((juv_hares_ttest$p.value)*100, 2)`% chance of finding means at least this different, if they are drawn from populations with the same mean. 
 
 ## Relationship Between Juvenile Weight & Hind Foot Length
+
+```{r}
+# data set with juvenile hares' weights and foot lengths 
+juv_weight_foot <- juvenile_hares %>% 
+  select(weight, hindft)
+
+# plotting the relationship between juvenile weight & hind foot length
+ggplot(data = juv_weight_foot, aes(x = hindft, y = weight)) +
+  geom_point() +
+  labs(x = "Hind Foot Length (mm)", y = "Body Weight (g)")
+```
+
+**Figure 3.** Relationship of hind foot length (mm) and body weight (g) of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Data: Kielland et al. 2017. 
+
 
 # Summary
 
