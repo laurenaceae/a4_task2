@@ -42,7 +42,7 @@ juvenile_hares <- hares %>%
   mutate(year = year(date))
 
 ggplot(data = juvenile_hares, aes(x = year)) +
-  geom_bar() +
+  geom_bar(fill = "darkslategray") +
   labs(x = "Year", y = "Juvenile Hares Trapped") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90)) +
@@ -78,7 +78,7 @@ juv_hares_sex_site <- juvenile_hares %>%
   mutate(sex = case_when(
     sex %in% "f" ~ "Female", 
     sex %in% "m" ~ "Male", 
-    sex %in% NA ~ "Sex Unknown")) %>% 
+    sex %in% NA ~ "Unknown")) %>% 
   mutate(grid = case_when(
     grid %in% "bonbs" ~ "Bonanza Spruce",
     grid %in% "bonmat" ~ "Bonanza Mature",
@@ -87,39 +87,40 @@ juv_hares_sex_site <- juvenile_hares %>%
 
 ggplot(data = juv_hares_sex_site, aes(x = sex, y = weight, color = sex)) +
   geom_boxplot(outlier.color = "black") +
-  scale_color_manual(values = c("lightpink2", "skyblue", "plum")) +
+  scale_color_manual(values = c("lightpink2", "skyblue", "#D9B6F7")) +
   labs(y = "Body Weight (g)", x = "Sex") +
   facet_wrap(~grid) +
   geom_point(shape = 1, color = "darkgray") +
   theme(axis.text.x = element_text(angle = 90)) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  stat_summary(fun = mean, geom ="point", shape = 5, size = 2, color = "black")
 
 ```
 
-**Figure 2.** Distribution of body weights g(g) for juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Individual data points are shown with hollow points and outliers are denoted by black points. The middle line is .Box endpoints are the 25th and 75th percentiles. Data: Kielland et al. 2017. 
+**Figure 2.** Distribution of body weights (g) for juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Individual data points are shown with hollow points and outliers are denoted by black points. The center lines in the boxes are the medians and the black hollow diamonds are means. The whiskers show minimums and maximums (not including outliers). Box endpoints are the 25th and 75th percentiles. Data: Kielland et al. 2017. 
 
-**Table 1.** Summary statistics of weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017.  
+**Table 1.** Summary statistics of weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Statistics include mean (g), standard deviation (g), and sample size. No live hares of unknown sex were trapped at Bonanza Spruce so values there are NaN and NA. Data: Kielland et al. 2017.  
 
 ```{r}
 # find mean, standard deviation and sample size for weights of juvenile hares
 juv_hares_sex_site_stats <- juv_hares_sex_site %>% 
   group_by(sex, grid) %>% 
 	summarise(mean = mean(weight, na.rm = TRUE),
+	          median = median(weight, na.rm = TRUE),
 	          sd = sd(weight, na.rm = TRUE),
 	          n = n()) 
 
-# make table of mean, standard deviation and sample size for juvenile hare weights
+# make table of mean, median, standard deviation and sample size for juvenile hare weights by sex and site
 juv_hares_sex_site_stats %>% 
-  kable(col.names = c("Sex", "Site", "Mean (g)", "Standard Deviation (g)", "Sample Size"), digits = 2) %>% 
+  kable(col.names = c("Sex", "Site", "Mean (g)", "Median (g)", "Standard Deviation (g)", "Sample Size"), digits = 2) %>% 
   kable_styling(full_width = FALSE) %>% 
-  column_spec(1:5, color = "black") %>% 
+  column_spec(1:6, color = "black") %>% 
   row_spec(4:6, background = "lightgray")
-
 ```
 
 ### Summary
 
-Then, in 2 - 3 sentences below your visualization(s) describe in text the main takeaways that you would want the audience to understand from your figures.
+Mean and median body weights of juvenile hares are higher for males than females at all three sites. Juvenile hares with unknown sex only had recorded body weights at Bonanza Mature and Bonanza Riparian. For Bonanza Riparian, juvenile hares with unknown sex had much smaller mean and median weights compared to males and females at this site. Bonanza Spruce males and females had higher means and medians compared to all other juvenile hares (male, female, and unknown) at the other two sites. 
 
 ## Juvenile Weight Comparison By Sex
 
@@ -131,20 +132,20 @@ juv_sex_stats <- juvenile_hares %>%
   group_by(sex) %>% 
 	summarise(mean = mean(weight, na.rm = TRUE),
 	          sd = sd(weight, na.rm = TRUE),
-	          n = n()) 
+	          n = n()) %>% 
+  filter(sex %in% c("m", "f"))
 
 # make sex values presentable then make a table
 juv_sex_stats %>% 
   mutate(sex = case_when(
     sex %in% "f" ~ "Female", 
-    sex %in% "m" ~ "Male", 
-    sex %in% NA ~ "Sex Unknown")) %>%
+    sex %in% "m" ~ "Male")) %>%
   kable(col.names = c("Sex", "Mean (g)", "Standard Deviation (g)", "Sample Size"), digits = 2) %>% 
   kable_styling(full_width = FALSE)
 
 ```
 
-```{r, include = FALSE}
+```{r}
 # subset data for juvenile hares by sex
 juv_hares_f <- juvenile_hares %>% 
   filter(sex == "f") %>% 
@@ -154,31 +155,32 @@ juv_hares_m <- juvenile_hares %>%
   filter(sex == "m") %>% 
   select(weight)
 
-# find mean weights for males and females
+# find mean weights for males and females (for in-line code referencing)
 f_juv_mean <- mean(juv_hares_f$weight, na.rm = TRUE)
 m_juv_mean <- mean(juv_hares_m$weight, na.rm = TRUE)
+```
 
-# exploratory tests before running t-test
-
-# histograms
-ggplot(data = juv_hares_f, aes(x = weight))+
-  geom_bar()
-
-ggplot(data = juv_hares_m, aes(x = weight))+
-  geom_bar()
-
-# qq plots
-ggplot(data = juv_hares_f, aes(sample = weight))+
-  geom_qq()
-
-ggplot(data = juv_hares_m, aes(sample = weight))+
-  geom_qq()
-
+```{r}
 # create dataframe with males and females together
 juv_hares_f_m <- juvenile_hares %>%
   filter(sex == "m" | sex == "f") %>% 
   select(sex, weight)
 
+# exploratory tests before running t-test:
+
+# histograms
+ggplot(data = juv_hares_f_m, aes(x = weight))+
+  geom_bar() +
+  facet_wrap(~sex)
+
+# qq plots
+ggplot(data = juv_hares_f_m, aes(sample = weight))+
+  geom_qq() +
+  facet_wrap(~sex)
+
+```
+
+```{r}
 # subset data with males and females but use pull() so I can run tests on it
 juv_hares_f_pull <- juvenile_hares %>% 
   filter(sex == "f") %>% 
@@ -194,12 +196,12 @@ juv_hares_m_pull <- juvenile_hares %>%
 juv_hares_cohen <- cohen.d(juv_hares_m_pull, juv_hares_f_pull)
 
 # t test, two samples but unpaired
-juv_hares_ttest <- t.test(juv_hares_m, juv_hares_f)
+juv_hares_ttest <- t.test(juv_hares_m_pull, juv_hares_f_pull)
 ```
 
 ### Summary
 
-The mean weight of female hares is `r round(f_juv_mean, 2)` g, which is `r round((1-(f_juv_mean/m_juv_mean))*100, 2)`% smaller than the mean weight of male hares at `r round(m_juv_mean, 2)` g. The actual difference in mean weights is `r round(m_juv_mean - f_juv_mean, 2)` g. The effect size is `r round(juv_hares_cohen$estimate, 3)`, which is not very large - the means are pretty close together. A t-test was performed which purported a `r round((juv_hares_ttest$p.value)*100, 2)`% chance of finding means at least this different, if they are drawn from populations with the same mean. 
+The mean weight of juvenile female hares is `r round(f_juv_mean, 2)` g, which is `r round((1-(f_juv_mean/m_juv_mean))*100, 2)`% smaller than the mean weight of juvenile male hares at `r round(m_juv_mean, 2)` g. The actual difference in mean weights is `r round(m_juv_mean - f_juv_mean, 2)` g. The effect of sex on body weight is not very large (d = `r round(juv_hares_cohen$estimate, 3)`) so the means are relatively close together. However, a t-test (Unpaired `r juv_hares_ttest$method`: p-value = `r round(juv_hares_ttest$p.value, 3)`, t(`r round(juv_hares_ttest$parameter, 2)`) = `r round(juv_hares_ttest$statistic, 2)`) shows that the means are significantly different. This t-test purported a `r round((juv_hares_ttest$p.value)*100, 2)`% chance of finding means at least this different, if they are drawn from populations with the same mean. Diagnostic plots (histograms, qq plots) showed data and residuals were normally distributed. 
 
 ## Relationship Between Juvenile Weight & Hind Foot Length
 
