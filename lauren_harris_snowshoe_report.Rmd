@@ -67,7 +67,7 @@ juvenile_hares_stats <- juvenile_hares_summary %>%
 
 ### Summary
 
-The minimum count of juvenile hares trapped for a given year was 0 (2002 and 2009), and the maximum was `r max(juvenile_hares_summary$count)` hares trapped, during `r juvenile_hares_summary[juvenile_hares_summary$count == max(juvenile_hares_summary$count), ]$year`. The median number of juvenile hares trapped annually was `r juvenile_hares_stats$median` hares and the mean was `r juvenile_hares_stats$mean` hares. One notable trend in the data is that the number of juvenile hares trapped annually generally decreased per year. I would suggest that the amount of traps set be included in this dataset. Then, the number of juveniles trapped should be divided by the number of traps set. Therefore, the absolute counts would become success rates, which are more standardized, informative, and reflective of true hare populations. 
+The minimum count of juvenile hares trapped for a given year was 0 (during 2002 and 2009), and the maximum was `r max(juvenile_hares_summary$count)` hares trapped, during `r juvenile_hares_summary[juvenile_hares_summary$count == max(juvenile_hares_summary$count), ]$year`. The median number of juvenile hares trapped annually was `r juvenile_hares_stats$median` hares and the mean was `r juvenile_hares_stats$mean` hares. One notable trend in the data is that the number of juvenile hares trapped annually generally decreased per year. Moving forward, I would suggest that the number of traps set be standardized across years, and recorded as part of the dataset. This would mean effort between years is the same, so the number of juvenile hares trapped is not impacted by sampling effort. Then, the data would more accurately reflect true hare populations. 
 
 ## Juvenile Hare Weights
 
@@ -75,24 +75,28 @@ The minimum count of juvenile hares trapped for a given year was 0 (2002 and 200
 # group juvenile hares by sex and site, then get sample sizes and weights, then make sex and grid variables presentable
 juv_hares_sex_site <- juvenile_hares %>% 
   group_by(sex, grid) %>% 
-  summarize(count = n(), weight) %>% 
   mutate(sex = case_when(
     sex %in% "f" ~ "Female", 
     sex %in% "m" ~ "Male", 
     sex %in% NA ~ "Sex Unknown")) %>% 
   mutate(grid = case_when(
-    grid %in% "bonbs" ~ "Bonbs",
-    grid %in% "bonmat" ~ "Bonmat",
-    grid %in% "bonrip" ~ "Bonrip"
+    grid %in% "bonbs" ~ "Bonanza Spruce",
+    grid %in% "bonmat" ~ "Bonanza Mature",
+    grid %in% "bonrip" ~ "Bonanza Riparian"
   ))
 
-ggplot(data = juv_hares_sex_site, aes(x = weight, y = count)) +
-  geom_col(width = 20) +
-  facet_grid(sex~grid) +
-  labs(x = "Weight (g)", y = "Juvenile Hares Trapped" )
+ggplot(data = juv_hares_sex_site, aes(x = sex, y = weight, color = sex)) +
+  geom_boxplot(outlier.color = "black") +
+  scale_color_manual(values = c("lightpink2", "skyblue", "plum")) +
+  labs(y = "Body Weight (g)", x = "Sex") +
+  facet_wrap(~grid) +
+  geom_point(shape = 1, color = "darkgray") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(legend.position = "none")
+
 ```
 
-**Figure 2.** Distribution of weights for juvenile hares (g) from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Data: Kielland et al. 2017. 
+**Figure 2.** Distribution of body weights g(g) for juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Individual data points are shown with hollow points and outliers are denoted by black points. The middle line is .Box endpoints are the 25th and 75th percentiles. Data: Kielland et al. 2017. 
 
 **Table 1.** Summary statistics of weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017.  
 
@@ -106,7 +110,7 @@ juv_hares_sex_site_stats <- juv_hares_sex_site %>%
 
 # make table of mean, standard deviation and sample size for juvenile hare weights
 juv_hares_sex_site_stats %>% 
-  kable(col.names = c("Sex", "Site", "Mean (g)", "Standard Deviation (g)", "Sample Size")) %>% 
+  kable(col.names = c("Sex", "Site", "Mean (g)", "Standard Deviation (g)", "Sample Size"), digits = 2) %>% 
   kable_styling(full_width = FALSE) %>% 
   column_spec(1:5, color = "black") %>% 
   row_spec(4:6, background = "lightgray")
@@ -135,7 +139,7 @@ juv_sex_stats %>%
     sex %in% "f" ~ "Female", 
     sex %in% "m" ~ "Male", 
     sex %in% NA ~ "Sex Unknown")) %>%
-  kable(col.names = c("Sex", "Mean (g)", "Standard Deviation (g)", "Sample Size")) %>% 
+  kable(col.names = c("Sex", "Mean (g)", "Standard Deviation (g)", "Sample Size"), digits = 2) %>% 
   kable_styling(full_width = FALSE)
 
 ```
@@ -193,7 +197,9 @@ juv_hares_cohen <- cohen.d(juv_hares_m_pull, juv_hares_f_pull)
 juv_hares_ttest <- t.test(juv_hares_m, juv_hares_f)
 ```
 
-The mean weight of female hares is `r round(f_juv_mean, 2)` g, which is `r round((1-(f_juv_mean/m_juv_mean))*100, 2)`% smaller than the mean weight of male hares at `r round(m_juv_mean, 2)` g. The actual difference in mean weights is `r m_juv_mean - f_juv_mean` g. The effect size is `r round(juv_hares_cohen$estimate, 3)`, which is not very large - the means are pretty close together. A t-test was performed which purported a `r round((juv_hares_ttest$p.value)*100, 2)`% chance of finding means at least this different, if they are drawn from populations with the same mean. 
+### Summary
+
+The mean weight of female hares is `r round(f_juv_mean, 2)` g, which is `r round((1-(f_juv_mean/m_juv_mean))*100, 2)`% smaller than the mean weight of male hares at `r round(m_juv_mean, 2)` g. The actual difference in mean weights is `r round(m_juv_mean - f_juv_mean, 2)` g. The effect size is `r round(juv_hares_cohen$estimate, 3)`, which is not very large - the means are pretty close together. A t-test was performed which purported a `r round((juv_hares_ttest$p.value)*100, 2)`% chance of finding means at least this different, if they are drawn from populations with the same mean. 
 
 ## Relationship Between Juvenile Weight & Hind Foot Length
 
