@@ -1,5 +1,5 @@
 ---
-title: "Snowshoe report"
+title: "Snowshoe Report"
 author: "Lauren Harris"
 date: "11/4/2021"
 output: 
@@ -9,8 +9,8 @@ output:
     theme: lumen
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 library(here)
 library(tidyverse)
@@ -18,19 +18,9 @@ library(lubridate)
 library(dplyr)
 library(kableExtra)
 library(effsize)
+library(broom)
 ```
 
-# Introduction
-
-A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last so you know what’s contained in the report
-
-# Data and Analyses
-
-A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.
-
-# Juvenile Hare Initial Investigation
-
-## Annual Juvenile Hare Trap Counts
 ```{r}
 # read in data
 hares <- read_csv(here("data", "bonanza_hares.csv"))
@@ -40,7 +30,20 @@ juvenile_hares <- hares %>%
   filter(age == "j") %>% 
   mutate(date = mdy(date)) %>% 
   mutate(year = year(date))
+```
 
+# Introduction
+
+This study explores data of juvenile snowshoe hares (Lepus americanus) collected from the Bonanza Creek Experimental Forest LTER site from `r min(juvenile_hares$year)` to `r max(juvenile_hares$year)` in a capture-recapture study. First, juvenile hare trap counts are compared annually. Second,  juvenile hare body weight across sex and site (sites include Bonanza Mature, Bonanza Riparian, Bonanza Spruce) are explored. Third, juvenile weight comparisons are made excluding site. Fourth, the relationship between juvenile body weight and hind foot length is analyzed. 
+
+# Data and Analyses
+
+Data was collected from the Bonanza Creek Experimental Forest LTER site from `r min(juvenile_hares$year)` to `r max(juvenile_hares$year)`. The number of observations including observations of adults is `r nrow(hares)`. Section 1 visualizes annual juvenile hare trap counts in a histogram. Section 2 visualizes the body weight of juvenile hares of different sexes (male, female, unknown) across 3 sites (Bonanza Mature, Bonanza Riparian, Bonanza Spruce) through boxplots and a table including mean, median, standard deivation and sample size. Section 3 explores the summary statistics (mean, standard deviation, sample size) of weight by sex in a table. Additional exploratory tests include histograms and qq plots to determine normality of observations and residuals. Effect size was determined using Cohen's d and a two sample unpaired t-test was run with a significance level of 0.05. Section 4 includes a simple linear model using hind foot length to predict body weight and a test of correlation to find Pearson's r, as well as a scatter plot of hind foot length and body weight. Diagnostic plots are also included to check assumptions of the simple linear model. 
+
+# Juvenile Hare Initial Investigation
+
+## Annual Juvenile Hare Trap Counts
+```{r}
 ggplot(data = juvenile_hares, aes(x = year)) +
   geom_bar(fill = "darkslategray") +
   labs(x = "Year", y = "Juvenile Hares Trapped") +
@@ -50,7 +53,7 @@ ggplot(data = juvenile_hares, aes(x = year)) +
   
 ```
 
-**Figure 1.** Annual juvenile hare trap counts. Annual counts of trapped juvenile hares from the Bonanza Creek Experimental Forest LTER site. (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Data: Kielland et al. 2017. 
+**Figure 1.** Annual juvenile hare trap counts. Annual counts of trapped juvenile hares from the Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Data: Kielland et al. 2017. 
 
 ```{r}
 # find counts of juvenile hares by year
@@ -127,7 +130,7 @@ Mean and median body weights of juvenile hares are higher for males than females
 **Table 2.** Weights of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`) grouped by sex. Summary statistics include mean (g), standard deviation (g), and sample size. Data: Kielland et al. 2017. 
 
 ```{r}
-# group juvenile hares by sex then find mean, standard deviaiton and sample size for weights
+# group juvenile hares by sex then find mean, standard deviation and sample size for weights
 juv_sex_stats <- juvenile_hares %>% 
   group_by(sex) %>% 
 	summarise(mean = mean(weight, na.rm = TRUE),
@@ -160,7 +163,7 @@ f_juv_mean <- mean(juv_hares_f$weight, na.rm = TRUE)
 m_juv_mean <- mean(juv_hares_m$weight, na.rm = TRUE)
 ```
 
-```{r}
+```{r, include = FALSE}
 # create dataframe with males and females together
 juv_hares_f_m <- juvenile_hares %>%
   filter(sex == "m" | sex == "f") %>% 
@@ -197,6 +200,7 @@ juv_hares_cohen <- cohen.d(juv_hares_m_pull, juv_hares_f_pull)
 
 # t test, two samples but unpaired
 juv_hares_ttest <- t.test(juv_hares_m_pull, juv_hares_f_pull)
+
 ```
 
 ### Summary
@@ -210,21 +214,49 @@ The mean weight of juvenile female hares is `r round(f_juv_mean, 2)` g, which is
 juv_weight_foot <- juvenile_hares %>% 
   select(weight, hindft)
 
-# plotting the relationship between juvenile weight & hind foot length
-ggplot(data = juv_weight_foot, aes(x = hindft, y = weight)) +
-  geom_point() +
-  labs(x = "Hind Foot Length (mm)", y = "Body Weight (g)")
-```
-
-**Figure 3.** Relationship of hind foot length (mm) and body weight (g) of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Data: Kielland et al. 2017. 
-
-```{r}
 # trying out a linear model because boss said so
 juv_hares_lm <- lm(weight ~ hindft, data = juv_weight_foot)
-summary(juv_hares_lm)
+juv_hares_lm_summary <- summary(juv_hares_lm)
+
+# correlation test to find Pearson's R
+juv_hares_cor <- cor.test(data = juv_weight_foot, juv_weight_foot$hindft, juv_weight_foot$weight)
 ```
 
-# Summary
+```{r}
+# plotting the relationship between juvenile weight & hind foot length
+ggplot(data = juv_weight_foot, aes(x = hindft, y = weight)) +
+  geom_point(color = "darkslategray") +
+  labs(x = "Hind Foot Length (mm)", y = "Body Weight (g)") +
+  geom_smooth(method = "lm", color = "darkolivegreen4", fill = "darkseagreen") +
+  theme_minimal() 
+```
 
+**Figure 3.** Relationship of hind foot length (mm) and body weight (g) of juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Points indicate individual observations. Linear model summary: $\beta_1$ = `r round(juv_hares_lm$coefficients[2], 2)`, p < 0.001, R$^2$ = `r round(summary(juv_hares_lm)$r.squared, 2)`, Pearson's r = `r round(juv_hares_cor$estimate, 2)`)
+Data: Kielland et al. 2017. 
+
+```{r, include = FALSE}
+# check assumptions of linear regression
+plot(juv_hares_lm)
+# residuals vs. fitted looks pretty bad, qq plot is questionable, residuals vs leverage looks good
+```
+
+### Summary
+
+If all other factors are held equal, then for every 1 mm increase in hind foot length, there is on average a `r round(juv_hares_lm$coefficients[2], 2)` g increase in body weight. There is a moderate positive correlation between hind foot length and body weight (Pearson's r =`r round(juv_hares_cor$estimate, 2)`) but it is statistically significant (p value < 0.001). `r (round(summary(juv_hares_lm)$r.squared, 2))*100`% of the variance in body weight can be explained by hind foot length (R$^2$ = `r round(summary(juv_hares_lm)$r.squared, 2)`). 
+
+However, I am concerned about the homoscedasticity of the data. In the residuals vs. fitted plot, the residuals' variance increases with weight so the data is heteroscedastic. Additionally, the qq plots show that the residuals are somewhat non-normally distributed, especially at low weights. On top of not fitting assumptions for a linear model, the model also does not include sex or site, which seem to be important variables in predicting body weight (Table 2). 
+
+# Overall Summary
+
+- The number of juvenile hares trapped at Bonanza Creek Experimental Forest LTER generally decreased from `r min(juvenile_hares$year)` to`r max(juvenile_hares$year)`
+- On average, juvenile male hares weigh more than juvenile females at all sites. Of the 3 sites (Bonanza Mature, Bonanza Riparian, Bonanza Spruce), Bonanza spruce had the largest hares for both sexes
+- The actual difference in mean weights of juvenile hares of both sexes was `r round(m_juv_mean - f_juv_mean, 2)` g, and the t-test showed a significant but small effect of sex on body weight
+- There was a moderate (but statistically significant) positive correlation between hind foot length and body weight. The R$^2$ was `r round(summary(juv_hares_lm)$r.squared, 2)` so body weight is not well predicted by only hind foot length. Diagnostic plots showed that a simple linear model is not the best way to analyze the data. 
+
+Next Steps
+
+- Try a multiple linear regression to determine the effect of sex, site and hind foot length on body weight
 
 # Citations
+
+Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
