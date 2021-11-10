@@ -108,7 +108,6 @@ ggplot(data = juv_hares_sex_site, aes(x = sex, y = weight, color = sex)) +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.position = "none") +
   stat_summary(fun = mean, geom ="point", shape = 5, size = 2, color = "black")
-
 ```
 
 **Figure 2.** Distribution of body weights (g) for juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Individual data points are shown with hollow points and outliers are denoted by black points. The center lines in the boxes are the medians and the black hollow diamonds are means. The whiskers show minimums and maximums (not including outliers). Box endpoints are the 25th and 75th percentiles. Data: Kielland et al. 2017. 
@@ -158,7 +157,6 @@ juv_sex_stats %>%
     sex %in% "m" ~ "Male")) %>%
   kable(col.names = c("Sex", "Mean (g)", "Standard Deviation (g)", "Sample Size"), digits = 2) %>% 
   kable_styling(full_width = FALSE)
-
 ```
 
 ```{r}
@@ -183,7 +181,6 @@ juv_hares_f_m <- juvenile_hares %>%
   select(sex, weight)
 
 # exploratory tests before running t-test:
-
 # histograms
 ggplot(data = juv_hares_f_m, aes(x = weight))+
   geom_bar() +
@@ -198,11 +195,14 @@ ggplot(data = juv_hares_f_m, aes(sample = weight))+
 
 ```{r}
 # subset data with males and females but use pull() so I can run tests on it
+
+# for females
 juv_hares_f_pull <- juvenile_hares %>% 
   filter(sex == "f") %>% 
   pull(weight) %>% 
   na.omit()
 
+# for males
 juv_hares_m_pull <- juvenile_hares %>% 
   filter(sex == "m") %>% 
   pull(weight) %>% 
