@@ -44,7 +44,7 @@ This study explores data of juvenile snowshoe hares (Lepus americanus) collected
 
 # Data and Analyses
 
-Data was collected from the Bonanza Creek Experimental Forest LTER site from `r min(juvenile_hares$year)` to `r max(juvenile_hares$year)` (Kielland et al., 2017). The number of observations including observations of adults is `r nrow(hares)`. **Section 1** visualizes annual juvenile hare trap counts in a histogram. **Section 2** visualizes the body weight of juvenile hares of different sexes (male, female, unknown) across 3 sites (Bonanza Mature, Bonanza Riparian, Bonanza Spruce) through boxplots and a table including mean, median, standard deivation and sample size. **Section 3** explores the summary statistics (mean, standard deviation, sample size) of weight by sex in a table. Additional exploratory tests include histograms and qq plots to determine normality of observations and residuals. Effect size was determined using Cohen's d and a two sample unpaired t-test was run with a significance level of 0.05. **Section 4** includes a simple linear model using hind foot length to predict body weight and a test of correlation to find Pearson's r, as well as a scatter plot of hind foot length and body weight. Diagnostic plots are also included to check assumptions of the simple linear model. All analyses are in R version 4.0.2 using RStudio version 2021.09.0. 
+Data was collected from the Bonanza Creek Experimental Forest LTER site from `r min(juvenile_hares$year)` to `r max(juvenile_hares$year)` (Kielland et al., 2017). The number of observations including observations of adults is `r nrow(hares)`. **Section 1** visualizes annual juvenile hare trap counts in a histogram. **Section 2** visualizes the body weight of juvenile hares of different sexes (male, female, unknown) across 3 sites (Bonanza Mature, Bonanza Riparian, Bonanza Spruce) through boxplots and a table including mean, median, standard deivation and sample size. **Section 3** explores the summary statistics (mean, standard deviation, sample size) of weight by sex in a table. Effect size was determined using Cohen's d and a two sample unpaired t-test was run with a significance level of 0.05. **Section 4** includes a simple linear model using hind foot length to predict body weight and a test of correlation to find Pearson's r, as well as a scatter plot of hind foot length and body weight. All analyses are in R version 4.0.2 using RStudio version 2021.09.0. 
 
 # Juvenile Hare Initial Investigation
 
@@ -83,7 +83,7 @@ The minimum count of juvenile hares trapped for a given year was 0 (during 2002 
 
 ## Juvenile Hare Weights
 
-This section includes a boxplot of body weight which is separated by sex and site as well as a table also separated by sex and site which includes summary statistics (mean, median, standard deviation, sample size)
+This section includes a boxplot of juvenile hare body weight which is separated by sex and site. Also included is a table separated by sex and site which includes summary statistics (mean, median, standard deviation, sample size) about juvenile hare body weights. 
 
 ```{r}
 # group juvenile hares by sex and site, then get sample sizes and weights, then make sex and grid variables presentable
@@ -107,7 +107,7 @@ ggplot(data = juv_hares_sex_site, aes(x = sex, y = weight, color = sex)) +
   geom_point(shape = 1, color = "darkgray") +
   theme(axis.text.x = element_text(angle = 90)) +
   theme(legend.position = "none") +
-  stat_summary(fun = mean, geom ="point", shape = 5, size = 2, color = "black")
+  stat_summary(fun = mean, geom ="point", shape = 5, size = 2, color = "black", stroke = 0.5)
 ```
 
 **Figure 2.** Distribution of body weights (g) for juvenile hares from Bonanza Creek Experimental Forest LTER site (`r min(juvenile_hares$year)`-`r max(juvenile_hares$year)`). Hares are grouped by sex and site. Individual data points are shown with hollow points and outliers are denoted by black points. The center lines in the boxes are the medians and the black hollow diamonds are means. The whiskers show minimums and maximums (not including outliers). Box endpoints are the 25th and 75th percentiles. Data: Kielland et al. 2017. 
@@ -259,14 +259,14 @@ plot(juv_hares_lm)
 
 If all other factors are held equal, then for every 1 mm increase in hind foot length, there is on average a `r round(juv_hares_lm$coefficients[2], 2)` g increase in body weight. There is a moderate positive correlation between hind foot length and body weight (Pearson's r =`r round(juv_hares_cor$estimate, 2)`) but it is statistically significant (p value < 0.001). `r (round(summary(juv_hares_lm)$r.squared, 2))*100`% of the variance in body weight can be explained by hind foot length (R$^2$ = `r round(summary(juv_hares_lm)$r.squared, 2)`). 
 
-However, I am concerned about the homoscedasticity of the data. In the residuals vs. fitted plot, the residuals' variance increases with weight so the data is heteroscedastic. Additionally, the qq plots show that the residuals are somewhat non-normally distributed, especially at low weights. On top of not fitting assumptions for a linear model, the model also does not include sex or site, which seem to be important variables in predicting body weight (Table 2). 
+However, I am concerned about the homoscedasticity of the data. In the residuals vs. fitted plot (not included in this report), the residuals' variance increases with weight so the data is heteroscedastic. Additionally, the qq plots (not included in this report) show that the residuals are somewhat non-normally distributed, especially at low weights. On top of not fitting assumptions for a linear model, the model also does not include sex or site, which seem to be important variables in predicting body weight (Table 2). 
 
 # Overall Summary
 
 - The number of juvenile hares trapped at Bonanza Creek Experimental Forest LTER generally decreased from `r min(juvenile_hares$year)` to`r max(juvenile_hares$year)`
 - On average, juvenile male hares weigh more than juvenile females at all sites. Of the 3 sites (Bonanza Mature, Bonanza Riparian, Bonanza Spruce), Bonanza spruce had the largest hares for both sexes
 - The actual difference in mean weights of juvenile hares of both sexes was `r round(m_juv_mean - f_juv_mean, 2)` g, and the t-test showed a significant but small effect of sex on body weight
-- There was a moderate (but statistically significant) positive correlation between hind foot length and body weight. The R$^2$ was `r round(summary(juv_hares_lm)$r.squared, 2)` so body weight is not well predicted by only hind foot length. Diagnostic plots showed that a simple linear model is not the best way to analyze the data. 
+- There was a moderate (but statistically significant) positive correlation between hind foot length and body weight. The R$^2$ was `r round(summary(juv_hares_lm)$r.squared, 2)` so body weight is not well predicted by only hind foot length. Diagnostic plots (not included in the report) showed that a simple linear model is not the best way to analyze the data. 
 
 Next Steps
 
