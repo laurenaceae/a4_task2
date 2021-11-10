@@ -240,7 +240,7 @@ juv_hares_cor <- cor.test(data = juv_weight_foot, juv_weight_foot$hindft, juv_we
 ```{r}
 # plotting the relationship between juvenile weight & hind foot length
 ggplot(data = juv_weight_foot, aes(x = hindft, y = weight)) +
-  geom_point(color = "darkslategray") +
+  geom_point(color = "darkslategray", size = 1) +
   labs(x = "Hind Foot Length (mm)", y = "Body Weight (g)") +
   geom_smooth(method = "lm", color = "darkolivegreen4", fill = "darkseagreen") +
   theme_minimal() 
